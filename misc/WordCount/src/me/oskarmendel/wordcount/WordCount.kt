@@ -1,5 +1,25 @@
 /**
- * Created by Oskar on 2017-08-05.
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2017 Oskar Mendel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package me.oskarmendel.wordcount
 
@@ -17,8 +37,6 @@ fun main(args : Array<String>) {
         val words = getWords(content)
         val wordCounts = words.groupBy { it }.mapValues({ it.value.size })
 
-        val mostUsed : MutableList<String>
-
         //
         // @hardcode @refactor Right now only hardcoded top three values.
         //
@@ -27,23 +45,20 @@ fun main(args : Array<String>) {
         var second = ""
         var third = ""
 
-        for (entry in wordCounts) {
-            val word = entry.key
-            val count = entry.value
-
-            if (biggest == null || biggest == "" || count.compareTo(wordCounts.get(biggest)!!) > 0) {
+        for ((word, count) in wordCounts) {
+            if (biggest == "" || count > (wordCounts[(biggest)]!!)) {
                 biggest = word
-            } else if ((second == null || second == "" || count.compareTo(wordCounts.get(second)!!) > 0)) {
+            } else if (second == "" || count > (wordCounts[(second)]!!)) {
                 second = word
-            } else if ((third == null || third == "" || count.compareTo(wordCounts.get(third)!!) > 0)) {
+            } else if (third == "" || count > (wordCounts[(third)]!!)) {
                 third = word
             }
         }
 
         println("Total words: " + words.size)
-        println("1st most used word: " + biggest + " " + wordCounts.get(biggest))
-        println("2nd most used word: " + second + " " + wordCounts.get(second))
-        println("3rd most used word: " + third + " " + wordCounts.get(third))
+        println("1st most used word: " + biggest + " " + wordCounts[(biggest)])
+        println("2nd most used word: " + second + " " + wordCounts[(second)])
+        println("3rd most used word: " + third + " " + wordCounts[(third)])
 
     } else {
         print("Please enter a valid file path as a command-line argument!")
