@@ -79,19 +79,29 @@ OMTools_Squareroot:
 		ret
 
 ;**************************************************
-; Multiply single byte number.
+; Divide two single byte number.
+; This function performs division using repeated
+; subtraction, as long as the dividend is greater
+; than the divisor we subtract the divisor from the
+; dividend.
 ;
-; 
-;**************************************************
-OMTools_Mul8:
-
-	ret
-
-;**************************************************
-; Divide single byte number.
+; @param OMTools_X - Value for the dividend.
+; @param OMTools_Y - Value for the divisor.
 ;
-; 
+; @returns OMTools_Z - Result of OMTools_X / OMTools_Y.
 ;**************************************************
 OMTools_Div8:
+	ldi OMTools_Z, 0			; Used as a counter
+
+	OMTools_Div8Loop:
+	sub OMTools_X, OMTools_Y	; Sumtract dividend with divisor.
+	brcs OMTools_Div8Done		; Branch if OMTools_X < OMTools_Y.
+	inc OMTools_Z				; Increment counter.
+	rjmp OMTools_Div8Loop
+
+	OMTools_Div8Done:
+
+	clr OMTools_X				; Clear the used registers.
+	clr OMTools_Y
 
 	ret
