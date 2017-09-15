@@ -105,3 +105,24 @@ OMTools_Div8:
 	clr OMTools_Y
 
 	ret
+
+;**************************************************
+; Delay milliseconds.
+; Uses OMTools_Y and OMTools_Z as variables for delaying
+; by milliseconds.  
+;
+; Example:
+;	OMTools_Y = 10
+;	OMTools_Z = 100
+;
+; @param OMTools_Y -
+; @param OMTools_Z -
+;**************************************************
+OMTools_WaitMilliseconds:
+	L1: 
+	dec OMTools_Z
+	brne L1
+	dec OMTools_Y
+	brne L1
+
+	ret
