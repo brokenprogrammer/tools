@@ -112,17 +112,31 @@ OMTools_Div8:
 ; by milliseconds.  
 ;
 ; Example:
-;	OMTools_Y = 10
-;	OMTools_Z = 100
+;	ldi OMTools_Y, LOW(1000)
+;	ldi OMTools_Z, HIGH(1000)
 ;
 ; @param OMTools_Y -
 ; @param OMTools_Z -
 ;**************************************************
 OMTools_WaitMilliseconds:
-	L1: 
-	dec OMTools_Z
-	brne L1
-	dec OMTools_Y
-	brne L1
+	push r18
+	push r19
+	push OMTools_Y
+	push OMTools_Z
 
+	OMTools_WaitMilliseconds_Loop:
+	ldi  r18, 2
+    ldi  r19, 75
+	L1: dec  r19
+    brne L1
+    dec  r18
+    brne L1		
+
+	sbiw OMTools_Z:OMTools_Y, 1
+	brne OMTools_WaitMilliseconds_Loop
+
+	pop OMTools_Z
+	pop OMTools_Y
+	pop r19
+	pop r18
 	ret
