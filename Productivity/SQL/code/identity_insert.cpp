@@ -123,23 +123,23 @@ StringGetSubstring(char *A, char *B)
     return (NULL);
 }
 
-struct entity
+struct string_list
 {
-    char *Name;
-    char* Identifiers[1024];
+    int Count;
+    char **Strings;
 };
 
-void
-ReadFileIdentifiers(char *FileName)
+OM_INTERNAL string_list
+LoadStringList(char *FileName)
 {
-    entity Entity = { };
+    string_list Result = { };
 
     FILE *File = fopen(FileName, "r");
     if (File == NULL)
     {
         // TODO(Oskar): Propper logging.
         printf("Error: couldn't open file.");
-        return;
+        return (Result);
     }
 
     // NOTE(Oskar): Get file length
@@ -147,57 +147,138 @@ ReadFileIdentifiers(char *FileName)
     u32 FileSize = ftell(File);
     fseek(File, 0, SEEK_SET);
 
-    char *Buffer = (char *) malloc(FileSize * sizeof(char)) + 1;
-
-    int c;
-    for (u64 Index = 0; (c = fgetc(File)) != EOF; ++Index)
+    char Buffer[4096];
+    int ExpectedCount = 0;
+    while (!feof(File))
     {
-        Buffer[Index] = (char) c;
+        fgets(Buffer, sizeof(Buffer), File);
+        ++ExpectedCount;
     }
 
-    // TODO(Oskar): Close File
-
-    const char NewLine = '\n';
-    char *Lines = strtok(Buffer, &NewLine);
-
-    int Line = 0;
-    while (Lines != NULL)
+    Result.Strings = (char **)malloc(ExpectedCount* sizeof(char*));
+    fseek(File, 0, SEEK_SET);
+    while (!feof(File))
     {
-        ++Line;
-
-        if (StringContains(Lines, "public"))
+        fgets(Buffer, sizeof(Buffer), File);
+        size_t Length = strlen(Buffer);
+        
+        for (size_t Clean = 0; Clean < Length; ++Clean)
         {
-            while (isspace(*Lines)) ++Lines;
-            Lines += strlen("public") + 1;
-
-            if (StringContains(Lines, "class"))
+            if ((Buffer[Clean] == '\n') || Buffer[Clean] == '\r')
             {
-                Lines += strlen("class") + 1;
-
+                Buffer[Clean] = 0;
             }
-
-            if (StringContains(Lines, "virtual"))
-            {
-                Lines = strtok(NULL, &NewLine);
-                continue;
-            }
-
-            // TODO(Oskar): Handle normal identifier
-            while (!isspace(*Lines)) ++Lines;
-
-            printf("%d:%s\n", Line, Lines);
         }
-        Lines = strtok(NULL, &NewLine);
+        char **Dest = &Result.Strings[Result.Count++];
+        *Dest = (char *) malloc(Length + 1);
+        memcpy(*Dest, Buffer, Length + 1);
     }
 
     fclose(File);
-    //free(Buffer);
+    return (Result);
+}
+
+struct sql_identifiers
+{
+    char *Name;
+    int Count;
+    char **Identifiers;
+};
+
+OM_INTERNAL sql_identifiers
+ConvertStringListToSqlIdentifiers(string_list *List)
+{
+    // TODO(Oskar): Currently doesn't take ID into account
+
+    sql_identifiers Result = {};
+    Result.Identifiers = (char **)malloc(List->Count * sizeof(char*));
+
+    for (int Index = 0; Index < List->Count; ++Index)
+    {
+        char *Current = List->Strings[Index];
+        while(isspace(*Current)) ++Current;
+        
+        if (StringContains(Current, "public"))
+        {
+            Current += strlen("public") + 1;
+            if (!StringContains(Current, "virtual"))
+            {
+
+                // NOTE(Oskar): If Current is a class
+                if (StringContains(Current, "class"))
+                {
+                    Current += strlen("class") + 1;
+                    char *Temp = Current;
+                    while(!isspace(*Temp)) ++Temp;
+                    *Temp = 0;
+
+                    Result.Name = Current;
+                }
+                else
+                {
+                    char *Temp = Current;
+                    while(!isspace(*Temp)) ++Temp;
+                    while (isspace(*Temp)) ++Temp;
+                    Current = Temp;
+
+                    while(!isspace(*Temp)) ++Temp;
+                    *Temp = 0;
+
+                    char **Dest = &Result.Identifiers[Result.Count++];
+                    *Dest = (char *) malloc(strlen(Current) + 1);
+                    memcpy(*Dest, Current, strlen(Current) + 1);
+                }
+            }
+        }
+    }
+
+    return (Result);
+}
+
+OM_INTERNAL void
+GenerateEntityFrameworkIdentityInsert(sql_identifiers *Identifiers)
+{
+    char Buffer[8192];
+    char IdentifierBuffer[4096] = "";
+    
+    for(int Index = 0; Index < Identifiers->Count; ++Index)
+    {
+        strcat(IdentifierBuffer, "[");
+        strcat(IdentifierBuffer, Identifiers->Identifiers[Index]);   
+        strcat(IdentifierBuffer, "]");
+        strcat(IdentifierBuffer, ", ");
+    }
+    
+    u32 IdentifiersLength = strlen(IdentifierBuffer) - 2;
+    IdentifierBuffer[IdentifiersLength] = 0;
+
+    sprintf(Buffer, 
+        "SET IDENTITY_INSERT %s ON \n"
+        "INSERT INTO %s\n"
+        "(%s)\n"
+        "SELECT %s\n"
+        "FROM %s\n"
+        "SET IDENTITY_INSERT %s OFF \n", 
+        "[wst].[dbo].[Orders]", 
+        "[wst].[dbo].[Orders]", 
+        IdentifierBuffer,
+        IdentifierBuffer,
+        "[111wst].[dbo].[Orders]",
+        "[wst].[dbo].[Orders]");
+
+    printf("%s\n", Buffer);
 }
 
 int
 main (int argc, char **args)
 {
-    ReadFileIdentifiers("Order.cs");
+
+    // TODO(Oskar): Take 3 args, a file, source & target database.
+
+    string_list List = LoadStringList("Order.cs");
+    // TODO(Oskar): Free list
+    sql_identifiers Identifiers = ConvertStringListToSqlIdentifiers(&List);
+    GenerateEntityFrameworkIdentityInsert(&Identifiers);
 
     return (0);
 }
