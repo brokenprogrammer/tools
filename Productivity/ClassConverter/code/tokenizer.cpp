@@ -23,7 +23,7 @@ Refill(tokenizer *Tokenizer)
 OM_INTERNAL void
 AdvanceChars(tokenizer *Tokenizer, u32 Count)
 {
-    
+
 }
 
 OM_INTERNAL token
@@ -186,6 +186,8 @@ GetTokenRaw(tokenizer *Tokenizer)
             }
         } break;
     }
+
+    Token.Text.Count = (Tokenizer->Input.Data - Token.Text.Data);
 
     return (Token);
 }
