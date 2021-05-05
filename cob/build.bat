@@ -29,12 +29,12 @@ REM Debug:fastlink          : Allows for faster linking. Generates a limited .pd
 
 set application_name=cob
 set build_options=-DBUILD_WIN32=1
-set compile_flags=-nologo /Zi /FC /EHsc
-set linker_flags = ws2_32.lib -incremental:no -opt:ref
+set compile_flags=-nologo /Zi /FC /EHsc /I C:/sqlite/
+set linker_flags = ws2_32.lib -incremental:no -opt:ref 
 
 if not exist build mkdir build
 pushd build
 
-start /b /wait "" "cl.exe" %build_options% %compile_flags% ../main.cpp /link %linker_flags% /out:%application_name%.exe
+start /b /wait "" "cl.exe" %build_options% %compile_flags% ../main.cpp C:/sqlite/sqlite3.c /link %linker_flags% /out:%application_name%.exe
 
 popd
