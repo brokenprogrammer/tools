@@ -17,8 +17,9 @@ Callback(void *NotUsed, int argc, char **argv, char **azColName) {
 void
 PrintUsage()
 {
-    // TODO(Oskar): Print usage.
-    printf("Instructions..\n");
+    printf("Usage: \n");
+    printf("* To get a word explanation: cob MyWord\n");
+    printf("* To add/update a word explanation: cob MyWord \"My Explanation\" \n\n");
 }
 
 int main(int argc, char *argv[])
