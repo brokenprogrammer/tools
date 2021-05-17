@@ -17,9 +17,31 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
-    // TODO(Oskar): Cli args to specify x64 or x86, x64 default.
+
+    wchar_t Architecture[4] = L"x64";
+    if (argc <= 1)
+    {
+        printf("No arguments passed, assuming x64 ...\n");
+    }
+    else
+    {
+        char *Argument = argv[1];
+        if (strcmp(Argument, "x86") == 0)
+        {
+            wcscpy(Architecture, L"x86");
+        }
+        else if (strcmp(Argument, "x64") == 0)
+        {
+            wcscpy(Architecture, L"x64");
+        }
+        else
+        {
+            printf("Unknown architecture, use either x86 or x64 ... \n");
+            return 0;
+        }
+    }
 
     Find_Result Result = find_visual_studio_and_windows_sdk();
 
@@ -29,7 +51,8 @@ int main()
         wchar_t Buffer[2048];
         wcscpy(Buffer, L"CALL \"");
         wcscat(Buffer, Result.vs_varsall_path);
-        wcscat(Buffer, L"vcvarsall.bat\" x64");
+        wcscat(Buffer, L"vcvarsall.bat\" ");
+        wcscat(Buffer, Architecture);
 
         sprintf(CBuffer, "%ws", Buffer);
         system(CBuffer);
@@ -37,7 +60,7 @@ int main()
     else
     {
         printf("ERROR: vcvars not found! \n");
-        pritnf("Please submit an issue at: https://github.com/brokenprogrammer/tools");
+        printf("Please submit an issue at: https://github.com/brokenprogrammer/tools");
     }
 
     free_resources(&Result);
