@@ -53,8 +53,10 @@ int main(int argc, char *argv[])
         wcscat(Buffer, Result.vs_varsall_path);
         wcscat(Buffer, L"vcvarsall.bat\" ");
         wcscat(Buffer, Architecture);
+        wcscat(Buffer, L" && CALL build.bat");
 
         sprintf(CBuffer, "%ws", Buffer);
+
         system(CBuffer);
     }
     else

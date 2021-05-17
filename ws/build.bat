@@ -29,7 +29,7 @@ REM Debug:fastlink          : Allows for faster linking. Generates a limited .pd
 
 set application_name=ws
 set build_options=-DBUILD_WIN32=1
-set compile_flags=-nologo /Zi /FC /EHsc
+set compile_flags=-nologo /O2 /FC /EHsc
 set linker_flags = -incremental:no -opt:ref
 
 if not exist build mkdir build
